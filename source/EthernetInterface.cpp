@@ -28,6 +28,8 @@
 #include "mbed-drivers/mbed.h"
 #include <stdint.h>
 
+#include "drvEnc28j60.h"
+
 /* TCP/IP and Network Interface Initialisation */
 static struct netif netif;
 
@@ -73,6 +75,8 @@ static void init_netif(ip_addr_t *ipaddr, ip_addr_t *netmask, ip_addr_t *gw) {
     netif_set_status_callback(&netif, netif_status_callback);
 
     allow_net_callbacks = 1;
+
+	netif_set_link_up(&netif);
 }
 
 static void set_mac_address(void) {
@@ -117,10 +121,17 @@ int EthernetInterface::connect(unsigned int timeout_ms) {
 
         // Wait for an IP Address
         // -1: error, 0: timeout
-        while (if_up == 0);
+        while (if_up == 0)
+        {
+            drvEnc28j60_poll();
+        };
     } else {
         netif_set_up(&netif);
-        while (link_up == 0);
+        while (link_up == 0)
+        {
+            drvEnc28j60_poll();
+            wait_ms(1);
+        };
     }
     _timeout.detach();
 
