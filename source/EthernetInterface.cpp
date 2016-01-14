@@ -76,7 +76,12 @@ static void init_netif(ip_addr_t *ipaddr, ip_addr_t *netmask, ip_addr_t *gw) {
 
     allow_net_callbacks = 1;
 
-	netif_set_link_up(&netif);
+    /* Check whether the link is up or down*/
+    if(drvEnc28j60_linkstatus()) {
+        netif_set_link_up(&netif);
+    } else {
+        netif_set_link_down(&netif);
+    }
 }
 
 static void set_mac_address(void) {
@@ -129,7 +134,9 @@ int EthernetInterface::connect(unsigned int timeout_ms) {
         netif_set_up(&netif);
         while (link_up == 0)
         {
-            drvEnc28j60_poll();
+            if(drvEnc28j60_linkstatus()) {
+                netif_set_link_up(&netif);
+            }
             wait_ms(1);
         };
     }
